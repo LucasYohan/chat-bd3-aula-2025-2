@@ -31,17 +31,51 @@
 
     <script src="socket.io/socket.io.js"></script>
     <script>
+
+        //Conexão com socket.io do backend
         const socket = io('http://localhost:3000');
 
+        //Função de renderização de messagem no navegador
+        function renderMenssage(message) {
+            $('.messages').append('<div class="message"><strong>' + message.author + message.data_hora + '</strong>' + message.message)
+        }
+
+        //Recupera as mensagem anteriores de todos os usuários e exibe no navegador
+        socket.on('previousMessage', function (messages) {
+            for (message of messages) {
+                renderMenssage(message);
+            }
+        })
+
+        //Captura os dados do usuário e da mensssagem do usuário
         $('#chat').submit(function (event) {
 
             event.preventDefault();
 
-            let usuario = $('input[name_username]').val();
-            let mensagem = $('input[name_message]').val();
+            let usuario = $('input[name=username]').val();
+            let mensagem = $('input[name=message]').val();
 
-            console.log('USUARIO' + usuario);
-            console.log('USUARIO' + mensagem);
+            console.log('USUARIO: ' + usuario);
+            console.log('MENSAGEM: ' + mensagem);
+
+            //Data e hora do envio da mensagem
+            let data_hora_obj = new Date();
+            let data_hora_msg = `[${data_hora_obj.getDate()}/${data_hora_obj.getMonth()}/${data_hora_obj.getFullYear()} - ${data_hora_obj.getHours()}:${data_hora_obj.getMinutes()}:${data_hora_obj.getSeconds()}]`
+
+            //Criação do objeto JSON da messagem
+            var messageObject = {
+                author: usuario,
+                data_hora: data_hora_msg,
+                message: mensagem
+            }
+
+            // renderMenssage(messageObject);
+            renderMenssage(messageObject);
+
+            socket.emit('sendMessage', messageObject);
+
+            console.log('JSON: ' + JSON.stringify(messageObject));
+
         });
     </script>
 </body>
